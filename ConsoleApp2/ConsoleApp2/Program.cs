@@ -37,7 +37,7 @@
         }
         else
         {
-            Console.WriteLine("Grade F");
+            Console.WriteLine("Invalid Marks");
         }
     }
 }
@@ -61,10 +61,9 @@ public class Program
     static void Main(string[] args)
     {
         Student s = new Student();
-        Grade g = new Grade();
         s.setName("John");
-        s.setMarks(100);
-        Console.WriteLine( s.Name +" score is: " + s.getMarks());
+        s.setMarks(101);
+        Console.WriteLine( s.Name + "'s" + " score is: " + s.getMarks());
         s.displayGrade();
     }
 }
