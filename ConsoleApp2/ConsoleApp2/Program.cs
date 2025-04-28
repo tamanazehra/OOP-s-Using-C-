@@ -63,7 +63,7 @@ public class Program
         Student s = new Student();
         s.setName("John");
         s.setMarks(101);
-        Console.WriteLine( s.Name + "'s" + " score is: " + s.getMarks());
+        Console.WriteLine( s.getName() + "'s" + " score is: " + s.getMarks());
         s.displayGrade();
     }
 }
