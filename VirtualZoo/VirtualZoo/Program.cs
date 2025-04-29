@@ -54,9 +54,9 @@ public class Cat : Animal, IEat
     }
 }
 
-public class Loin : Animal, IEat
+public class Lion : Animal, IEat
 {
-    public Loin(string name, int age, string species) : base(name, age, species) { }
+    public Lion(string name, int age, string species) : base(name, age, species) { }
     public override string Speak()
     {
         return "Roar!";
@@ -88,7 +88,7 @@ public class Program
         {
             new Dog("Buddy", 3, "Dog"),
             new Cat("Whiskers", 2, "Cat"),
-            new Loin("Simba", 5, "Loin"),
+            new Lion("Simba", 5, "Lion"),
             new Elephant("Dumbo", 10, "Elephant")
         };
         foreach (var animal in animals)
