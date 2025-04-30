@@ -1,6 +1,8 @@
-﻿public class BankAccount
+﻿using BankingSystem;
+
+public abstract class BankAccount : ITransaction
 {
-    protected string accountNumber; // Changed from private to protected  
+    protected string accountNumber;
     protected string accountHolderName;
     protected double balance;
 
@@ -10,6 +12,8 @@
         this.accountHolderName = accountHolderName;
         this.balance = balance;
     }
+
+    public abstract void CalculateInterest();
 
     public virtual void Deposit(double amount)
     {
@@ -48,6 +52,7 @@
         Console.WriteLine($"Account Holder Name: {accountHolderName}");
         Console.WriteLine($"Balance: {balance}");
     }
+ 
 }
 
 public class SavingsAccount : BankAccount
@@ -59,11 +64,16 @@ public class SavingsAccount : BankAccount
     {
         this.interestRate = interestRate;
     }
+    public override void CalculateInterest()
+    {
+        double interest = balance * interestRate / 100;
+        Console.WriteLine($"Interest for account {accountNumber} is {interest}");
+    }
     public void AddInterest()
     {
         double interest = balance * interestRate / 100;
         balance += interest;
-        Console.WriteLine($"Interest ₹{interest} added to savings account.");
+        Console.WriteLine($"Interest ₹{interest} added.");
     }
     public override void Withdraw(double amount)
     {
@@ -86,6 +96,10 @@ public class CurrentAccount : BankAccount
     {
         this.overdraftLimit = overdraftLimit;
     }
+    public override void CalculateInterest()
+    {
+        Console.WriteLine("Current accounts do not earn interest.");
+    }
     public override void Withdraw(double amount)
     {
         if (amount <= balance + overdraftLimit)
@@ -100,25 +114,42 @@ public class CurrentAccount : BankAccount
     }
 }
 
+
 class Program
 {
     static void Main(string[] args)
     {
-        // Savings Account Test
-        SavingsAccount savings = new SavingsAccount("SAV001", "Tamana Zehra", 5000, 5);
-        savings.GetDetails();
-        savings.Deposit(2000);
-        savings.AddInterest();
-        savings.Withdraw(3500);
-        Console.WriteLine($"Balance after interest: {savings.GetBalance()}\n");
+        // Create accounts using base class reference (Polymorphism)
+        BankAccount savings = new SavingsAccount("SAV123", "Tamana Zehra", 5000, 4.5);
+        BankAccount current = new CurrentAccount("CUR456", "Rahul Sharma", 3000, 2000);
 
-        // Current Account Test
-        CurrentAccount current = new CurrentAccount("CUR001", "Rahul Sharma", 3000, 2000);
-        current.GetDetails();
-        current.Withdraw(4500); // Overdraft used
-        Console.WriteLine($"Balance after withdrawal: {current.GetBalance()}");
+        Console.WriteLine("\n=== Savings Account Operations ===");
+        savings.Deposit(2000);                   // ITransaction
+        savings.Withdraw(1000);                  // Overridden in SavingsAccount
+        savings.CalculateInterest();             // Abstract method implementation
+        savings.GetDetails();                // Shared from base class
+
+        Console.WriteLine("\n=== Current Account Operations ===");
+        current.Deposit(1000);                   // ITransaction
+        current.Withdraw(4500);                  // Uses overdraft
+        current.CalculateInterest();             // Shows no interest
+        current.GetDetails();                // Shared from base class
+
+        Console.WriteLine("\n=== Accessing via Interface ===");
+        ITransaction transaction1 = savings;
+        ITransaction transaction2 = current;
+
+        transaction1.Deposit(500);
+        transaction2.Withdraw(100);
+
+        Console.WriteLine("\n--- Final Balances ---");
+        Console.WriteLine($"Savings: {savings.GetBalance()}");
+        Console.WriteLine($"Current: {current.GetBalance()}");
     }
 }
+
+
+
 
 
 
