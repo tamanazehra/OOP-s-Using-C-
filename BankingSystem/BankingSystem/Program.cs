@@ -1,155 +1,121 @@
-﻿using BankingSystem;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public abstract class BankAccount : ITransaction
+namespace BankingSystem
 {
-    protected string accountNumber;
-    protected string accountHolderName;
-    protected double balance;
-
-    public BankAccount(string accountNumber, string accountHolderName, double balance)
+    class Program
     {
-        this.accountNumber = accountNumber;
-        this.accountHolderName = accountHolderName;
-        this.balance = balance;
-    }
+        static List<BankAccount> accounts = new List<BankAccount>();
+        private static int choice;
 
-    public abstract void CalculateInterest();
-
-    public virtual void Deposit(double amount)
-    {
-        if (amount > 0)
+        static void Main(string[] args)
         {
-            balance += amount;
-            Console.WriteLine($"Deposited {amount} to account {accountNumber}. New balance is {balance}.");
+            while (true)
+            {
+                Console.WriteLine("\n=== Banking System Menu ===");
+                Console.WriteLine("1. Create Savings Account");
+                Console.WriteLine("2. Create Current Account");
+                Console.WriteLine("3. Deposit");
+                Console.WriteLine("4. Withdraw");
+                Console.WriteLine("5. Show Account Details");
+                Console.WriteLine("6. Exit");
+                Console.Write("Enter choice: ");
+                int choice = int.Parse(Console.ReadLine());
+
+                switch (choice)
+                {
+                    case 1:
+                        CreateSavingsAccount();
+                        break;
+                    case 2:
+                        CreateCurrentAccount();
+                        break;
+                    case 3:
+                        PerformTransaction("deposit");
+                        break;
+                    case 4:
+                        PerformTransaction("withdraw");
+                        break;
+                    case 5:
+                        ShowDetails();
+                        break;
+                    case 6:
+                        Console.WriteLine("Thank you for using the Banking System.");
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
+            }
         }
-        else
+
+    static void CreateSavingsAccount()
         {
-            Console.WriteLine("Invalid Deposit Amount.");
-        }
-    }
+            Console.Write("Enter Account Number: ");
+            string accNo = Console.ReadLine();
+            Console.Write("Enter Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Enter Initial Balance: ");
+            double bal = double.Parse(Console.ReadLine());
+            Console.Write("Enter Interest Rate: ");
+            double rate = double.Parse(Console.ReadLine());
 
-    public virtual void Withdraw(double amount)
-    {
-        if (amount > 0 && amount <= balance)
+            accounts.Add(new SavingsAccount(accNo, name, bal, rate));
+            Console.WriteLine("Savings account created successfully.");
+        }
+
+        static void CreateCurrentAccount()
         {
-            balance -= amount;
-            Console.WriteLine($"Withdrew {amount} from account {accountNumber}. New balance is {balance}.");
+            Console.Write("Enter Account Number: ");
+            string accNo = Console.ReadLine();
+            Console.Write("Enter Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Enter Initial Balance: ");
+            double bal = double.Parse(Console.ReadLine());
+            Console.Write("Enter Overdraft Limit: ");
+            double limit = double.Parse(Console.ReadLine());
+
+            accounts.Add(new CurrentAccount(accNo, name, bal, limit));
+            Console.WriteLine("Current account created successfully.");
         }
-        else
+
+        static void PerformTransaction(string type)
         {
-            Console.WriteLine("Invalid Withdraw Amount.");
+            Console.Write("Enter Account Number: ");
+            string accNo = Console.ReadLine();
+
+            BankAccount acc = accounts.Find(a => a.GetAccountNumber() == accNo);
+            if (acc == null)
+            {
+                Console.WriteLine("Account not found.");
+                return;
+            }
+
+            Console.Write($"Enter amount to {type}: ");
+            double amount = double.Parse(Console.ReadLine());
+
+            if (type == "deposit") acc.Deposit(amount);
+            else acc.Withdraw(amount);
         }
-    }
 
-    public double GetBalance()
-    {
-        return balance;
-    }
-
-    public void GetDetails()
-    {
-        Console.WriteLine($"Account Number: {accountNumber}");
-        Console.WriteLine($"Account Holder Name: {accountHolderName}");
-        Console.WriteLine($"Balance: {balance}");
-    }
- 
-}
-
-public class SavingsAccount : BankAccount
-{
-    private double interestRate;
-
-    public SavingsAccount(string accountNumber, string accountHolderName, double balance, double interestRate)
-        : base(accountNumber, accountHolderName, balance)
-    {
-        this.interestRate = interestRate;
-    }
-    public override void CalculateInterest()
-    {
-        double interest = balance * interestRate / 100;
-        Console.WriteLine($"Interest for account {accountNumber} is {interest}");
-    }
-    public void AddInterest()
-    {
-        double interest = balance * interestRate / 100;
-        balance += interest;
-        Console.WriteLine($"Interest ₹{interest} added.");
-    }
-    public override void Withdraw(double amount)
-    {
-        double minimumBalance = 1000; // Minimum balance requirement
-        if (balance - amount >= minimumBalance)
+        static void ShowDetails()
         {
-            base.Withdraw(amount);
+            Console.Write("Enter Account Number: ");
+            string accNo = Console.ReadLine();
+
+            BankAccount acc = accounts.Find(a => a.GetAccountNumber() == accNo);
+            if (acc == null)
+            {
+                Console.WriteLine("Account not found.");
+                return;
+            }
+
+            acc.GetDetails();
         }
-        else
-        {
-            Console.WriteLine("Withdrawal denied. Minimum balance requirement not met.");
-        }
-    }
-}
-public class CurrentAccount : BankAccount
-{
-    private double overdraftLimit;
-    public CurrentAccount(string accountNumber, string accountHolderName, double balance, double overdraftLimit)
-    : base(accountNumber, accountHolderName, balance)
-    {
-        this.overdraftLimit = overdraftLimit;
-    }
-    public override void CalculateInterest()
-    {
-        Console.WriteLine("Current accounts do not earn interest.");
-    }
-    public override void Withdraw(double amount)
-    {
-        if (amount <= balance + overdraftLimit)
-        {
-            balance -= amount;
-            Console.WriteLine($"{amount} withdrawn from current account (Overdraft Allowed)");
-        }
-        else
-        {
-            Console.WriteLine("Withdrawal denied. Overdraft limit exceeded.");
-        }
-    }
-}
-
-
-class Program
-{
-    static void Main(string[] args)
-    {
-        // Create accounts using base class reference (Polymorphism)
-        BankAccount savings = new SavingsAccount("SAV123", "Tamana Zehra", 5000, 4.5);
-        BankAccount current = new CurrentAccount("CUR456", "Rahul Sharma", 3000, 2000);
-
-        Console.WriteLine("\n=== Savings Account Operations ===");
-        savings.Deposit(2000);                   // ITransaction
-        savings.Withdraw(1000);                  // Overridden in SavingsAccount
-        savings.CalculateInterest();             // Abstract method implementation
-        savings.GetDetails();                // Shared from base class
-
-        Console.WriteLine("\n=== Current Account Operations ===");
-        current.Deposit(1000);                   // ITransaction
-        current.Withdraw(4500);                  // Uses overdraft
-        current.CalculateInterest();             // Shows no interest
-        current.GetDetails();                // Shared from base class
-
-        Console.WriteLine("\n=== Accessing via Interface ===");
-        ITransaction transaction1 = savings;
-        ITransaction transaction2 = current;
-
-        transaction1.Deposit(500);
-        transaction2.Withdraw(100);
-
-        Console.WriteLine("\n--- Final Balances ---");
-        Console.WriteLine($"Savings: {savings.GetBalance()}");
-        Console.WriteLine($"Current: {current.GetBalance()}");
     }
 }
 
-
-
-
-
-
+    
